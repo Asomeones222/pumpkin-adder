@@ -1,0 +1,190 @@
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+} /* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+    margin: 0;
+} /* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+ul[role="list"],
+ol[role="list"] {
+    list-style: none;
+} /* Set core root defaults */
+html:focus-within {
+    scroll-behavior: smooth;
+} /* Set core body defaults */
+body {
+    min-height: 100vh;
+    text-rendering: optimizeSpeed;
+    line-height: 1.5;
+} /* A elements that don't have a class get default styles */
+
+button,
+textarea,
+select {
+    font: inherit;
+} /* Remove all animations, transitions and smooth scroll for people that prefer not to see them */
+/* End CSS Reset */
+
+html {
+    font-size: 62.5%;
+    overflow-x: hidden;
+}
+body {
+    font-family: "Roboto", sans-serif;
+    font-size: 1.3rem;
+    width: 30rem;
+    height: 45rem;
+    background-color: #4b4959;
+    color: aliceblue;
+    padding: 3rem;
+    /* overflow-y: scroll; */
+    overflow-x: hidden;
+}
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    min-width: 100%;
+}
+.site-status {
+    /* position: absolute; */
+    /* top: 10%; */
+    font-size: 2.1rem;
+    text-align: center;
+    /* transform: translateY(-7rem) translateX(-1rem); */
+    transform: translateX(-1rem);
+    min-width: 110%;
+    margin-block-end: 1rem;
+}
+.main-section {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1rem;
+}
+.classes-header {
+    margin-block-start: 2rem;
+}
+.btn {
+    all: unset;
+    font-size: 2rem;
+}
+.btn--add {
+    text-align: center;
+    min-width: 100%;
+    cursor: pointer;
+    margin-block-end: 3rem;
+}
+.btn--add:focus-visible,
+.btn--add:hover {
+    outline: 2px dashed rgb(232, 232, 232);
+}
+ul {
+    /* list-style: none; */
+    margin: 0;
+    padding: 0;
+}
+.class-input-form {
+    display: flex;
+    flex-direction: column;
+}
+.note {
+    font-size: 1.6rem;
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+.note:before {
+    content: attr(data-hover);
+    font-size: 1.2rem;
+    display: none;
+    outline: 3px solid rgb(27, 14, 14);
+    background-color: #4b4959;
+    color: aliceblue;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    transition: opacity 1s ease-in-out;
+
+    position: absolute;
+    z-index: 1;
+    width: 14rem;
+    left: -10rem;
+    top: 0;
+    /* transform: translateX(-300%); */
+}
+
+.note:hover:before {
+    display: inline-block;
+}
+.form-submit-btn {
+    margin-block-start: 1.2rem;
+}
+.class-preview {
+    padding-block: 0.5rem;
+    border-bottom: 2px solid #28272f;
+}
+.id-section-container {
+    display: flex;
+    justify-content: space-between;
+}
+.classes {
+    position: relative;
+    padding-inline-end: 2rem;
+}
+.class-preview {
+    position: relative;
+}
+.class-preview-delete {
+    cursor: pointer;
+    opacity: 0;
+    z-index: 1;
+    position: absolute;
+    top: 2rem;
+    right: -3.8rem;
+    width: 3rem;
+    height: 3rem;
+    text-align: center;
+}
+.class-preview-delete:hover,
+.class-preview-delete:focus-visible {
+    opacity: 1;
+    visibility: visible;
+    background-color: red;
+}
+.site-status-url {
+    all: unset;
+    cursor: pointer;
+}
+.site-status-url:hover {
+    border-bottom: 2px solid #28272f;
+}
+
+.start-btn {
+    justify-self: flex-start;
+    min-width: 100%;
+    cursor: pointer;
+    /* transform: translateY(7rem); */
+    margin-block-start: 2rem;
+    margin-block-end: 3rem;
+    text-align: center;
+}
+.start-btn:hover,
+.start-btn:focus-visible {
+    outline: 2px solid aliceblue;
+}
