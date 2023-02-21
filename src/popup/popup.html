@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="popup.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script defer src="popup.js"></script>
+    <title>JU Class Adder</title>
+</head>
+
+<body>
+    <main class="main">
+        <section class="main-section">
+            <h1 class="site-status"></h1>
+            <h2 class="header classes-header">Classes you've added:</h2>
+            <form action="#" class="class-input-form" autocomplete="off">
+                <label for="class-name">Class name</label>
+                <input type="text" name="" id="class-name" required>
+                <label for="class-id">Class ID</label>
+                <input type="text" name="" id="class-id" required>
+                <label for="class-sections">Class Section(s) <span class="note"
+                        data-hover="Make sure to input the sections as CSV. Example 1,2,3...">&#9888;</span></label>
+                <input type="text" name="" id="class-sections" required>
+                <input type="submit" value="Add" class="form-submit-btn">
+            </form>
+            <ul class="classes">
+            </ul>
+            <button class="btn btn--add">&#43;</button>
+        </section>
+        <button class="btn start-btn">Start</button>
+    </main>
+</body>
+
+</html>
