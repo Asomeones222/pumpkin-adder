@@ -6,4 +6,4 @@ A web extension which automates the class registration process for JU students.
 
 -   [ ] Make README more informative.
 -   [ ] Write a manual.
--   [ ] Make extension great 🌹.
+-   [ ] Make the extension great 🌹.
