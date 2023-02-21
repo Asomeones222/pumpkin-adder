@@ -55,7 +55,7 @@ const PA_Classes = {
 
 const PA_DOM = {
     // DOM manipulation is done here
-    sfx: new Audio(chrome.runtime.getURL("./sfx.wav")),
+    sfx: new Audio(chrome.runtime.getURL("./src/sfx/sfx.wav")),
 
     delay: {
         sleep: 1100,
@@ -154,18 +154,10 @@ const PA_DOM = {
             `The following classe(s) are open: ${output.join("\n")}`
         );
         console.info("%cNotification triggered!", "color:cyan");
-        // Play programmatically generated sound
-        // const context = new AudioContext();
-        // const o = context.createOscillator();
-        // const g = context.createGain();
-        // o.connect(g);
-        // g.connect(context.destination);
-        // o.start(0);
-        // setTimeout(() => o.stop(), 10000);
         if (this.sfx.currentTime < 1)
             this.sfx.currentTime = 0;
         this.sfx.play().catch(err => {
-
+            console.log('Error playing audio. No issue continue.');
         });
 
     },
