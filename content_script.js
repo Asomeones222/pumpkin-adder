@@ -154,7 +154,9 @@ const PA_DOM = {
         //         PA_Classes.openWantedClasses.push(wantedClass);
         // });
         PA_Classes.openClasses.forEach((openClass) => {
-            if (PA_Classes.wantedClasses.some((wantedClass) => openClass.ID === wantedClass.ID && wantedClass.sections.includes(openClass.sections[0])))
+            if (PA_Classes.wantedClasses.some((wantedClass) => openClass.ID === wantedClass.ID && wantedClass.sections.includes(
+                openClass.sections[0]
+            )))
                 PA_Classes.openWantedClasses.push(openClass);
         });
         console.log("Open wanted classes are\n", PA_Classes.openWantedClasses);
