@@ -1,18 +1,51 @@
-const classesHeader = document.querySelector(".classes-header");
-const userClassesList = document.querySelector(".classes");
-const classInputForm = document.querySelector(".class-input-form");
-const addClassBtn = document.querySelector(".btn--add");
-const classPreview =
-    '<li class="class-preview" data-entry-number="{Entry}"><h3 class="class-name">{Title}</h3><div class="id-section-container"><p class="class-id">{ID}</p><p class="class-sections">{Sections}</p></div><button class="class-preview-delete btn">&#10005;</button></li>';
-const startBtn = document.querySelector(".start-btn");
-const siteStatus = document.querySelector(".site-status");
 
 const UI = {
-    displayUrlWarning() {
-        siteStatus.textContent = "You are not on ";
-        siteStatus.style.color = "red";
+    DOM: {
+        classesHeader: document.querySelector(".classes-header"),
+        userClassesList: document.querySelector(".classes"),
+        classInputForm: document.querySelector(".class-input-form"),
+        addClassBtn: document.querySelector(".btn--add"),
+        classPreview:
+            '<li class="class-preview" data-entry-number="{Entry}"><h3 class="class-name">{Title}</h3><div class="id-section-container"><p class="class-id">{ID}</p><p class="class-sections">{Sections}</p></div><button class="class-preview-delete btn">&#10005;</button></li>',
+        startBtn: document.querySelector(".start-btn"),
+        siteStatus: document.querySelector(".site-status"),
+        settingsBtn: document.querySelector('.settings-btn'),
+        settingsForm: document.querySelector('.settings-form'),
+        saveSettingsBtn: document.querySelector('.settings-save-btn'),
+    },
+    setupEventHandlers() {
+        UI.DOM.userClassesList.addEventListener("click", (e) => {
+            if (!e.target.classList.contains("class-preview-delete")) return;
+            UI.removeClassPreview(e);
+        });
 
-        siteStatus.insertAdjacentHTML(
+
+        UI.DOM.addClassBtn.addEventListener("click", () => {
+            UI.showForm();
+        });
+        UI.DOM.classInputForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            UI.generateClassPreview();
+            UI.hideForm();
+        });
+        UI.DOM.startBtn.addEventListener("click", () => {
+            App.startApp();
+        });
+        UI.DOM.settingsBtn.addEventListener('click', () => {
+            UI.showSettings();
+        });
+        UI.DOM.saveSettingsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            App.saveSettings();
+            UI.hideSettings();
+            UI.showUserClasses();
+        });
+    },
+    displayUrlWarning() {
+        UI.DOM.siteStatus.textContent = "You are not on ";
+        UI.DOM.siteStatus.style.color = "red";
+
+        UI.DOM.siteStatus.insertAdjacentHTML(
             "beforeend",
             '<a href="https://reg.ju.edu.jo" class="site-status-url">reg.ju.edu.jo</a>'
         );
@@ -20,42 +53,82 @@ const UI = {
     },
 
     hideUrlWarning() {
-        siteStatus.textContent = "You are on ";
-        siteStatus.style.color = "inherit";
-        siteStatus.style.display = "none";
-        // this.displayStartBtn();
+        UI.DOM.siteStatus.textContent = "You are on ";
+        UI.DOM.siteStatus.style.color = "inherit";
+        UI.DOM.siteStatus.style.display = "none";
+        // this.showStartBtn();
     },
     showForm() {
-        classesHeader.style.display = "none";
-        classInputForm.style.display = "flex";
-        userClassesList.style.display = "none";
-        addClassBtn.style.display = "none";
+        UI.DOM.classInputForm.style.display = "flex";
+
         this.updateUI();
+        this.hideUserClasses();
         this.hideStartBtn();
     },
     hideForm() {
-        classInputForm.style.display = "none";
-        classesHeader.style.display = "block";
-        userClassesList.style.display = "block";
-        addClassBtn.style.display = "inline-block";
+        UI.DOM.classInputForm.style.display = "none";
+
         this.updateUI();
-        // this.displayStartBtn();
+        // this.showStartBtn();
         this.resetForm();
+        this.showUserClasses();
     },
-    displayStartBtn() {
+    showUserClasses() {
+        UI.DOM.classesHeader.style.display = "block";
+        UI.DOM.userClassesList.style.display = "block";
+        UI.DOM.addClassBtn.style.display = "inline-block";
+    },
+    hideUserClasses() {
+        UI.DOM.classesHeader.style.display = "none";
+        UI.DOM.userClassesList.style.display = "none";
+        UI.DOM.addClassBtn.style.display = "none";
+    },
+    showStartBtn() {
         if (App.siteStatus === false) {
             this.hideStartBtn();
             return;
         }
-        startBtn.style.display = "inline-block";
+        UI.DOM.startBtn.style.display = "inline-block";
     },
     hideStartBtn() {
-        startBtn.style.display = "none";
+        UI.DOM.startBtn.style.display = "none";
+    },
+    showSettings() {
+
+        App.loadSettings().then(() => {
+            // Loads settings into UI
+            const degrees = Array.from(UI.DOM.settingsForm.querySelector('#degree').children);
+            degrees.forEach(option => {
+                if (option.textContent === App.settings.degree)
+                    option.selected = true;
+            });
+            const faculties = Array.from(UI.DOM.settingsForm.querySelector('#faculty').children);
+            faculties.forEach(option => {
+                if (option.textContent === App.settings.faculty)
+                    option.selected = true;
+            });
+            const department = UI.DOM.settingsForm.querySelector('#department');
+            department.value = App.settings.department;
+        });
+
+
+        UI.DOM.settingsForm.style.display = "block";
+        this.hideForm();
+        this.hideUserClasses();
+        this.hideStartBtn();
+
+    },
+    hideSettings() {
+
+        UI.DOM.settingsForm.style.display = "none";
+        this.showUserClasses();
+        this.showStartBtn();
+
     },
     resetForm() {
-        classInputForm.querySelector("#class-name").value = "";
-        classInputForm.querySelector("#class-id").value = "";
-        classInputForm.querySelector("#class-sections").value = "";
+        UI.DOM.classInputForm.querySelector("#class-name").value = "";
+        UI.DOM.classInputForm.querySelector("#class-id").value = "";
+        UI.DOM.classInputForm.querySelector("#class-sections").value = "";
     },
 
     generateClassPreview(
@@ -66,21 +139,21 @@ const UI = {
         store = true
     ) {
         const className =
-            _className || classInputForm.querySelector("#class-name").value;
+            _className || UI.DOM.classInputForm.querySelector("#class-name").value;
         const classID =
-            _classID || classInputForm.querySelector("#class-id").value;
+            _classID || UI.DOM.classInputForm.querySelector("#class-id").value;
         const classSections =
             _classSections ||
-            classInputForm.querySelector("#class-sections").value;
-        const entry = _entry || userClassesList.children.length;
+            UI.DOM.classInputForm.querySelector("#class-sections").value;
+        const entry = _entry || UI.DOM.userClassesList.children.length;
 
-        let preview = classPreview
+        let preview = UI.DOM.classPreview
             .replace("{Title}", className)
             .replace("{ID}", classID)
             .replace("{Sections}", `${classSections}`)
             .replace("{Entry}", entry);
 
-        userClassesList.insertAdjacentHTML("beforeend", preview);
+        UI.DOM.userClassesList.insertAdjacentHTML("beforeend", preview);
 
         const classData = [className, classID, classSections, entry];
         if (store) {
@@ -103,11 +176,11 @@ const UI = {
     },
     hideClassPreviewDeleteAddBtn() {
         document.querySelectorAll('.class-preview-delete').forEach(btn => btn.style.visibility = 'hidden');
-        addClassBtn.style.visibility = 'hidden';
+        UI.DOM.addClassBtn.style.visibility = 'hidden';
     },
     showClassPreviewDeleteAddBtn() {
         document.querySelectorAll('.class-preview-delete').forEach(btn => btn.style.visibility = 'visible');
-        addClassBtn.style.visibility = 'visible';
+        UI.DOM.addClassBtn.style.visibility = 'visible';
 
     },
     updateUI() {
@@ -123,7 +196,7 @@ const UI = {
         )
             this.hideStartBtn();
         else
-            this.displayStartBtn();
+            this.showStartBtn();
     },
 };
 const App = {
@@ -131,6 +204,11 @@ const App = {
     storedClasses: { "PA-classes": [] },
     siteStatus: false,
     running: false,
+    settings: {
+        degree: "",
+        faculty: "",
+        department: "",
+    },
     // getPage() {
     //     let page;
     //     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -198,7 +276,7 @@ const App = {
             chrome.storage.sync.set({ "PA-start": true }, () => {
                 console.log('App started');
             });
-            startBtn.textContent = "Pause";
+            UI.DOM.startBtn.textContent = "Pause";
             UI.hideClassPreviewDeleteAddBtn();
         }
         else {
@@ -211,7 +289,7 @@ const App = {
         chrome.storage.sync.set({ "PA-start": false }, () => {
             console.log('App paused');
         });
-        startBtn.textContent = "Start";
+        UI.DOM.startBtn.textContent = "Start";
         UI.showClassPreviewDeleteAddBtn();
     },
     setRunningState() {
@@ -222,30 +300,48 @@ const App = {
                 this.pauseApp();
         });
 
-    }
+    },
+    saveSettings() {
 
+        const degrees = Array.from(UI.DOM.settingsForm.querySelector('#degree').children);
+        degrees.forEach(option => {
+            if (option.selected)
+                App.settings.degree = option.textContent;
+        });
+        const faculties = Array.from(UI.DOM.settingsForm.querySelector('#faculty').children);
+        faculties.forEach(option => {
+            if (option.selected)
+                App.settings.faculty = option.textContent;
+        });
+        const department = UI.DOM.settingsForm.querySelector('#department').value;
+        App.settings.department = department;
+
+        chrome.storage.sync.set({ "PA-settings": App.settings }, () => {
+            console.log('Settings saved!');
+        });
+    },
+    loadSettings() {
+        return new Promise((resolved, rejected) => {
+            chrome.storage.sync.get("PA-settings", (data) => {
+                console.log(data["PA-settings"]);
+                console.log(data["PA-settings"].degree);
+
+                App.settings.degree = data["PA-settings"].degree;
+                App.settings.faculty = data["PA-settings"].faculty;
+                App.settings.department = data["PA-settings"].department;
+                resolved();
+            });
+        });
+
+    },
 };
 
-userClassesList.addEventListener("click", (e) => {
-    if (!e.target.classList.contains("class-preview-delete")) return;
-    UI.removeClassPreview(e);
-});
 
-
-addClassBtn.addEventListener("click", () => {
-    UI.showForm();
-});
-classInputForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    UI.generateClassPreview();
-    UI.hideForm();
-});
-startBtn.addEventListener("click", () => {
-    App.startApp();
-});
 const init = function () {
-    // classInputForm.style.display = "none";
+    // UI.DOM.classInputForm.style.display = "none";
+    UI.setupEventHandlers();
     UI.hideForm();
+    UI.hideSettings();
     UI.loadClasses();
     App.checkSiteStatus();
     App.setRunningState();

@@ -21,10 +21,6 @@
         "default_popup": "./src/popup/popup.html"
     },
 
-    "background": {
-        "scripts": [""],
-        "persistent": false
-    },
     "web_accessible_resources": ["src/sfx/sfx.wav"],
     "permissions": ["storage", "tabs"]
 }

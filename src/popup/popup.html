@@ -28,11 +28,58 @@
                 <input type="text" name="" id="class-sections" required>
                 <input type="submit" value="Add" class="form-submit-btn">
             </form>
+            <form action="#" class="settings-form" autocomplete="off">
+                <label for="degree">Degree</label>
+                <br>
+                <select id="degree" name="degree">
+                    <option value=" ">---</option>
+                    <option value="0">البكالوريوس</option>
+                    <option value="6">دبلوم مهني</option>
+                    <option value="8">الماجستير</option>
+                    <option value="9">الدكتوراه</option>
+                </select>
+                <br>
+                <label for="faculty">Faculty</label>
+                <select id="faculty" name="faculty">
+                    <option value=" " selected="selected">---</option>
+                    <option value="03">العلوم</option>
+                    <option value="04">الشريعة</option>
+                    <option value="05">الطب</option>
+                    <option value="06">الزراعة</option>
+                    <option value="07">التمريض</option>
+                    <option value="08">العلوم التربوية</option>
+                    <option value="09">الهندسة</option>
+                    <option value="10">الحقوق</option>
+                    <option value="12">الصيدلة</option>
+                    <option value="13">طب الأسنان</option>
+                    <option value="16">الأعمال</option>
+                    <option value="18">علوم التأهيل</option>
+                    <option value="19">الملك عبدالله الثاني لتكنولوجيا المعلومات</option>
+                    <option value="20">الفنون والتصميم</option>
+                    <option value="21">مركز دراسات المرأة</option>
+                    <option value="22">اللغات الأجنبية</option>
+                    <option value="23">الآداب</option>
+                    <option value="26">الآثار والسياحة</option>
+                    <option value="30">الأمير الحسين بن عبدالله الثاني للدراسات الدولية</option>
+                    <option value="32">مركز اللغات</option>
+                    <option value="34">المعهد الوطني للسكري والغدد الصم والوراثة</option>
+                    <option value="36">متطلبات الجامعة</option>
+                    <option value="37">مركز الدراسات الاستراتيجية</option>
+                    <option value="38">علوم الرياضة</option>
+                    <option value="40">مركز المياه والطاقة والبيئة</option>
+                </select>
+                <label for="department">Department</label>
+                <input type="text" name="" id="department" required>
+                <input type="submit" value="Save" class="btn settings-save-btn solid-style-btn">
+                <p class="save-status"></p>
+            </form>
             <ul class="classes">
             </ul>
             <button class="btn btn--add">&#43;</button>
         </section>
-        <button class="btn start-btn">Start</button>
+        <button class="btn start-btn solid-style-btn">Start</button>
+        <button class="btn settings-btn "><img src="../icons/settings-outline.svg" alt=""> </button>
+
     </main>
 </body>
 

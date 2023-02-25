@@ -42,9 +42,19 @@ const PA_Classes = {
             PA_DOM.Start();
         });
     },
+    loadUserSettings() {
+        chrome.storage.sync.get("PA-settings", (data) => {
+            PA_Classes.degree = data["PA-settings"].degree;
+            PA_Classes.faculty = data["PA-settings"].faculty;
+            PA_Classes.major = data["PA-settings"].department;
+            console.log("Loaded user's settings.");
+
+        });
+    },
     allAdded: false,
-    faculty: "الهندسة",
-    major: "هندسة الحاسوب",
+    degree: "",
+    faculty: "",
+    major: "",
     openClasses: [],
     openWantedClasses: [],
 };
@@ -77,9 +87,13 @@ const PA_DOM = {
     loadClasses() {
         // Loads available classes into schedule
         const degree = document.getElementById("form:degree");
-        degree.children[1].selected = true; //Select bachelor's degree
-        degree.dispatchEvent(new Event("change"));
-
+        [...degree.children].forEach((option) => {
+            if (option.textContent.includes(PA_Classes.degree)) {
+                option.selected = true;
+                degree.dispatchEvent(new Event("change"));
+                console.log("degree selected");
+            }
+        });
         setTimeout(function () {
             const faculty = document.getElementById("form:Faculty");
             [...faculty.children].forEach((el) => {
@@ -194,7 +208,7 @@ const init = function () {
     chrome.storage.sync.set({ "PA-start": false }, () => {
         console.info('Pumpkin Adder: Ready');
     });
-
+    PA_Classes.loadUserSettings();
 }
 init();
 
