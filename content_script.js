@@ -1,8 +1,27 @@
-const PA_AppState = {
-    Initial: "Initial",
-    Searching: "Searching",
-    Registeration: "Registeration",
-    FreeTime: "FreeTime",
+const PA_App = {
+    _setStorage(key, value) {
+        // using local api instead
+        let data = {};
+        data[key] = value;
+
+        chrome.storage.local.set(data)
+    },
+    _getStorage(key, callback = () => { }) {
+        // using local api instead
+        chrome.storage.local.get(key, (data) => {
+            if (chrome.runtime.lastError)
+                console.log('Error getting from storage!');
+            // console.log(`${key}: Data retrieved from storage`);
+            callback(data);
+        });
+    },
+    state: {
+        Initial: "Initial",
+
+        Searching: "Searching",
+        Registeration: "Registeration",
+        FreeTime: "FreeTime",
+    }
 }
 
 class PA_classFactory {
@@ -25,13 +44,14 @@ class PA_classFactory {
     }
 }
 const PA_Classes = {
-    state: PA_AppState["Initial"],
+    state: PA_App.state["Initial"],
     running: false,
     wantedClasses: [],
     loadWantedClassesFromStorage() {
-        chrome.storage.sync.get(["PA-classes"], (data) => {
+        PA_App._getStorage("PA-classes", (data) => {
 
-            console.info("User data in storage:" + data);
+            console.info("User data in storage:");
+            console.log(data);
             if (Object.keys(data).length === 0) return;
 
             data["PA-classes"].forEach(_class => {
@@ -43,12 +63,12 @@ const PA_Classes = {
         });
     },
     loadUserSettings() {
-        chrome.storage.sync.get("PA-settings", (data) => {
+
+        PA_App._getStorage("PA-settings", (data) => {
             PA_Classes.degree = data["PA-settings"].degree;
             PA_Classes.faculty = data["PA-settings"].faculty;
             PA_Classes.major = data["PA-settings"].department;
             console.log("Loaded user's settings.");
-
         });
     },
     allAdded: false,
@@ -97,7 +117,7 @@ const PA_DOM = {
         setTimeout(function () {
             const faculty = document.getElementById("form:Faculty");
             [...faculty.children].forEach((el) => {
-                if (el.textContent.includes(PA_Classes.faculty)) {
+                if (el.textContent === PA_Classes.faculty) {
                     el.selected = true;
                     faculty.dispatchEvent(new Event("change"));
                     console.log("Faculty selected");
@@ -108,7 +128,7 @@ const PA_DOM = {
         setTimeout(function () {
             const major = document.getElementById("form:departmentlist");
             [...major.children].forEach((el) => {
-                if (el.textContent.includes(PA_Classes.major)) {
+                if (el.textContent === PA_Classes.major) {
                     el.selected = true;
                     const event = new Event("change");
                     major.dispatchEvent(event);
@@ -184,22 +204,23 @@ const PA_DOM = {
     },
     Start() {
         console.log(PA_Classes.state);
-        PA_Classes.state = PA_AppState["Searching"];
+        PA_Classes.state = PA_App.state["Searching"];
         setInterval(() => {
             if (!PA_Classes.running) {
-                PA_Classes.state = PA_AppState["Initial"];
+                PA_Classes.state = PA_App.state["Initial"];
                 return;
             }
+            console.log("Interval Called");
             this.loadClasses();
             setTimeout(() => {
                 this.storeOpenClasses();
                 console.log("Open classes are\n", PA_Classes.openClasses);
+                console.log("Wanted classes are\n", PA_Classes.wantedClasses);
                 this.storeOpenWantedCourses();
                 this.alertWithOpenWantedCourses();
                 this.removedSavedClasses();
             }, this.delay.delay());
             this.delay.resetDelayCount();
-            console.log("Interval Called");
 
         }, 8 * this.delay.sleep); //8 is the number of all delay.delay() called plus 1!
     },
@@ -207,9 +228,8 @@ const PA_DOM = {
 }
 
 const init = function () {
-    chrome.storage.sync.set({ "PA-start": false }, () => {
-        console.info('Pumpkin Adder: Ready');
-    });
+    PA_App._setStorage("PA-start", false)
+    console.info('Pumpkin Adder: Ready');
     PA_Classes.loadUserSettings();
 }
 init();
@@ -217,21 +237,21 @@ init();
 
 const PA_intervalCheckIfToStart = setInterval(() => {
     // Checks if the user wants to start every second. Acts like a primitive "event listener".
-    chrome.storage.sync.get(["PA-start"], function (data) {
+    PA_App._getStorage("PA-start", (data) => {
         if (data["PA-start"] === true) {
             PA_Classes.loadWantedClassesFromStorage();
             clearInterval(PA_intervalCheckIfToStart);
         }
-    });
+    })
 }, 1000);
 
 const PA_intervalCheckIfToContinue = setInterval(() => {
-    chrome.storage.sync.get(["PA-start"], function (data) {
+    PA_App._getStorage("PA-start", (data) => {
         if (data["PA-start"] === true) {
             PA_Classes.running = true;
         }
         else
             PA_Classes.running = false;
-    });
+    })
 }, 1000);
 

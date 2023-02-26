@@ -208,7 +208,7 @@ const App = {
         faculty: "",
         department: "",
     },
-    _setStorage(key, value, callback = () => { }) {
+    _setStorage(key, value) {
         // using local api instead
         let data = {};
         data[key] = value;
@@ -270,9 +270,7 @@ const App = {
         if (!this.running) {
             this.running = true;
             // window.localStorage.setItem("PA-start", "true");
-            App._setStorage("PA-start", true).then(() => {
-                console.log("App started");
-            });
+            App._setStorage("PA-start", true);
             UI.DOM.startBtn.textContent = "Pause";
             UI.hideClassPreviewDeleteAddBtn();
         } else {
