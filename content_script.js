@@ -173,7 +173,7 @@ const PA_DOM = {
         if (this.sfx.currentTime < 1)
             this.sfx.currentTime = 0;
         this.sfx.play().catch(err => {
-            console.log('Error playing audio. No issue continue.');
+            console.log('Error playing audio. Make sure to click on the background of the page.');
         });
 
     },

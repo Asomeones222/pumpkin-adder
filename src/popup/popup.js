@@ -95,6 +95,16 @@ const UI = {
     },
     showSettings() {
 
+
+
+
+        UI.DOM.settingsForm.style.display = "block";
+        this.hideForm();
+        this.hideUserClasses();
+        this.hideStartBtn();
+
+    },
+    loadSettingsIntoUI() {
         App.loadSettings().then(() => {
             // Loads settings into UI
             const degrees = Array.from(UI.DOM.settingsForm.querySelector('#degree').children);
@@ -109,14 +119,8 @@ const UI = {
             });
             const department = UI.DOM.settingsForm.querySelector('#department');
             department.value = App.settings.department;
+            console.log('Settings loaded into UI');
         });
-
-
-        UI.DOM.settingsForm.style.display = "block";
-        this.hideForm();
-        this.hideUserClasses();
-        this.hideStartBtn();
-
     },
     hideSettings() {
 
@@ -209,16 +213,16 @@ const App = {
         faculty: "",
         department: "",
     },
-    // getPage() {
-    //     let page;
-    //     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    //         const currentTab = tabs[0];
-    //         page = currentTab.url;
-    //         console.log(page);
-    //         this._checkSiteStatus(page);
-    //     });
-    //     return page;
-    // },
+    _setStorage(key, value) {
+        // using local api instead
+        const obj = { key, value };
+        const promise = chrome.storage.local.set(obj);
+        return promise;
+    },
+    _getStorage(key) {
+        // using local api instead 
+        return chrome.storage.local.get(key);
+    },
     checkSiteStatus() {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const currentTab = tabs[0];
@@ -322,10 +326,8 @@ const App = {
     },
     loadSettings() {
         return new Promise((resolved, rejected) => {
-            chrome.storage.sync.get("PA-settings", (data) => {
-                console.log(data["PA-settings"]);
-                console.log(data["PA-settings"].degree);
-
+            // chrome.storage.sync.get(["PA-settings"], (data) => {
+            chrome.storage.local.get(["PA-settings"], (data) => {
                 App.settings.degree = data["PA-settings"].degree;
                 App.settings.faculty = data["PA-settings"].faculty;
                 App.settings.department = data["PA-settings"].department;
@@ -342,6 +344,7 @@ const init = function () {
     UI.setupEventHandlers();
     UI.hideForm();
     UI.hideSettings();
+    UI.loadSettingsIntoUI();
     UI.loadClasses();
     App.checkSiteStatus();
     App.setRunningState();
