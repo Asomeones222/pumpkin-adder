@@ -1,4 +1,3 @@
-
 const UI = {
     DOM: {
         classesHeader: document.querySelector(".classes-header"),
@@ -9,16 +8,15 @@ const UI = {
             '<li class="class-preview" data-entry-number="{Entry}"><h3 class="class-name">{Title}</h3><div class="id-section-container"><p class="class-id">{ID}</p><p class="class-sections">{Sections}</p></div><button class="class-preview-delete btn">&#10005;</button></li>',
         startBtn: document.querySelector(".start-btn"),
         siteStatus: document.querySelector(".site-status"),
-        settingsBtn: document.querySelector('.settings-btn'),
-        settingsForm: document.querySelector('.settings-form'),
-        saveSettingsBtn: document.querySelector('.settings-save-btn'),
+        settingsBtn: document.querySelector(".settings-btn"),
+        settingsForm: document.querySelector(".settings-form"),
+        saveSettingsBtn: document.querySelector(".settings-save-btn"),
     },
     setupEventHandlers() {
         UI.DOM.userClassesList.addEventListener("click", (e) => {
             if (!e.target.classList.contains("class-preview-delete")) return;
             UI.removeClassPreview(e);
         });
-
 
         UI.DOM.addClassBtn.addEventListener("click", () => {
             UI.showForm();
@@ -31,10 +29,10 @@ const UI = {
         UI.DOM.startBtn.addEventListener("click", () => {
             App.startApp();
         });
-        UI.DOM.settingsBtn.addEventListener('click', () => {
+        UI.DOM.settingsBtn.addEventListener("click", () => {
             UI.showSettings();
         });
-        UI.DOM.saveSettingsBtn.addEventListener('click', (e) => {
+        UI.DOM.saveSettingsBtn.addEventListener("click", (e) => {
             e.preventDefault();
             App.saveSettings();
             UI.hideSettings();
@@ -94,40 +92,37 @@ const UI = {
         UI.DOM.startBtn.style.display = "none";
     },
     showSettings() {
-
-
-
-
         UI.DOM.settingsForm.style.display = "block";
         this.hideForm();
         this.hideUserClasses();
         this.hideStartBtn();
-
     },
     loadSettingsIntoUI() {
         App.loadSettings().then(() => {
             // Loads settings into UI
-            const degrees = Array.from(UI.DOM.settingsForm.querySelector('#degree').children);
-            degrees.forEach(option => {
+            const degrees = Array.from(
+                UI.DOM.settingsForm.querySelector("#degree").children
+            );
+            degrees.forEach((option) => {
                 if (option.textContent === App.settings.degree)
                     option.selected = true;
             });
-            const faculties = Array.from(UI.DOM.settingsForm.querySelector('#faculty').children);
-            faculties.forEach(option => {
+            const faculties = Array.from(
+                UI.DOM.settingsForm.querySelector("#faculty").children
+            );
+            faculties.forEach((option) => {
                 if (option.textContent === App.settings.faculty)
                     option.selected = true;
             });
-            const department = UI.DOM.settingsForm.querySelector('#department');
+            const department = UI.DOM.settingsForm.querySelector("#department");
             department.value = App.settings.department;
-            console.log('Settings loaded into UI');
+            console.log("Settings loaded into UI");
         });
     },
     hideSettings() {
-
         UI.DOM.settingsForm.style.display = "none";
         this.showUserClasses();
         this.showStartBtn();
-
     },
     resetForm() {
         UI.DOM.classInputForm.querySelector("#class-name").value = "";
@@ -143,7 +138,8 @@ const UI = {
         store = true
     ) {
         const className =
-            _className || UI.DOM.classInputForm.querySelector("#class-name").value;
+            _className ||
+            UI.DOM.classInputForm.querySelector("#class-name").value;
         const classID =
             _classID || UI.DOM.classInputForm.querySelector("#class-id").value;
         const classSections =
@@ -179,32 +175,31 @@ const UI = {
         });
     },
     hideClassPreviewDeleteAddBtn() {
-        document.querySelectorAll('.class-preview-delete').forEach(btn => btn.style.visibility = 'hidden');
-        UI.DOM.addClassBtn.style.visibility = 'hidden';
+        document
+            .querySelectorAll(".class-preview-delete")
+            .forEach((btn) => (btn.style.visibility = "hidden"));
+        UI.DOM.addClassBtn.style.visibility = "hidden";
     },
     showClassPreviewDeleteAddBtn() {
-        document.querySelectorAll('.class-preview-delete').forEach(btn => btn.style.visibility = 'visible');
-        UI.DOM.addClassBtn.style.visibility = 'visible';
-
+        document
+            .querySelectorAll(".class-preview-delete")
+            .forEach((btn) => (btn.style.visibility = "visible"));
+        UI.DOM.addClassBtn.style.visibility = "visible";
     },
     updateUI() {
         if (App.siteStatus) {
             this.hideUrlWarning();
-        }
-        else
-            this.displayUrlWarning();
+        } else this.displayUrlWarning();
 
         if (
             App.siteStatus === false ||
             App.storedClasses["PA-classes"].length === 0
         )
             this.hideStartBtn();
-        else
-            this.showStartBtn();
+        else this.showStartBtn();
     },
 };
 const App = {
-
     storedClasses: { "PA-classes": [] },
     siteStatus: false,
     running: false,
@@ -213,15 +208,21 @@ const App = {
         faculty: "",
         department: "",
     },
-    _setStorage(key, value) {
+    _setStorage(key, value, callback = () => { }) {
         // using local api instead
-        const obj = { key, value };
-        const promise = chrome.storage.local.set(obj);
-        return promise;
+        let data = {};
+        data[key] = value;
+
+        chrome.storage.local.set(data)
     },
-    _getStorage(key) {
-        // using local api instead 
-        return chrome.storage.local.get(key);
+    _getStorage(key, callback = () => { }) {
+        // using local api instead
+        chrome.storage.local.get(key, (data) => {
+            if (chrome.runtime.lastError)
+                console.log('Error getting from storage!');
+            console.log("Data retreived from storage");
+            callback(data);
+        });
     },
     checkSiteStatus() {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -248,9 +249,10 @@ const App = {
         this.exportClassesToStorage();
     },
     importClassesFromStorage(callback) {
-        // return JSON.parse(window.localStorage.getItem("PA-classes"));
-        chrome.storage.sync.get(["PA-classes"], (data) => {
-            if (Object.keys(data).length !== 0) this.storedClasses = data;
+        App._getStorage("PA-classes", (data) => {
+            if (Object.keys(data).length === 0)
+                return;
+            this.storedClasses = data;
 
             console.log(this.storedClasses);
             console.log("Classes imported from storage successfully");
@@ -259,85 +261,69 @@ const App = {
     },
 
     exportClassesToStorage() {
-        // window.localStorage.setItem(
-        //     "PA-classes",
-        //     JSON.stringify(this.storedClasses)
-        // );
-        chrome.storage.sync.set(
-            {
-                "PA-classes":
-                    this.storedClasses["PA-classes"],
-            },
-            () => {
-                console.log("Classes exported to storage successfully");
-            }
+        App._setStorage("PA-classes", this.storedClasses["PA-classes"], () => {
+            console.log("Classes exported to storage successfully");
+        }
         );
     },
     startApp() {
         if (!this.running) {
             this.running = true;
             // window.localStorage.setItem("PA-start", "true");
-            chrome.storage.sync.set({ "PA-start": true }, () => {
-                console.log('App started');
+            App._setStorage("PA-start", true).then(() => {
+                console.log("App started");
             });
             UI.DOM.startBtn.textContent = "Pause";
             UI.hideClassPreviewDeleteAddBtn();
-        }
-        else {
+        } else {
             this.pauseApp();
         }
     },
     pauseApp() {
         this.running = false;
         // window.localStorage.setItem("PA-start", "true");
-        chrome.storage.sync.set({ "PA-start": false }, () => {
-            console.log('App paused');
+        App._setStorage("PA-start", false, () => {
+            console.log("App paused");
         });
         UI.DOM.startBtn.textContent = "Start";
         UI.showClassPreviewDeleteAddBtn();
     },
     setRunningState() {
-        chrome.storage.sync.get(["PA-start"], (data) => {
-            if (data["PA-start"] === true)
-                this.startApp();
-            else
-                this.pauseApp();
+        App._getStorage("PA-start", (data) => {
+            if (data["PA-start"] === true) this.startApp();
+            else this.pauseApp();
         });
-
     },
     saveSettings() {
-
-        const degrees = Array.from(UI.DOM.settingsForm.querySelector('#degree').children);
-        degrees.forEach(option => {
-            if (option.selected)
-                App.settings.degree = option.textContent;
+        const degrees = Array.from(
+            UI.DOM.settingsForm.querySelector("#degree").children
+        );
+        degrees.forEach((option) => {
+            if (option.selected) App.settings.degree = option.textContent;
         });
-        const faculties = Array.from(UI.DOM.settingsForm.querySelector('#faculty').children);
-        faculties.forEach(option => {
-            if (option.selected)
-                App.settings.faculty = option.textContent;
+        const faculties = Array.from(
+            UI.DOM.settingsForm.querySelector("#faculty").children
+        );
+        faculties.forEach((option) => {
+            if (option.selected) App.settings.faculty = option.textContent;
         });
-        const department = UI.DOM.settingsForm.querySelector('#department').value;
+        const department =
+            UI.DOM.settingsForm.querySelector("#department").value;
         App.settings.department = department;
 
-        chrome.storage.sync.set({ "PA-settings": App.settings }, () => {
-            console.log('Settings saved!');
-        });
+        App._setStorage("PA-settings", App.settings);
     },
     loadSettings() {
         return new Promise((resolved, rejected) => {
-            // chrome.storage.sync.get(["PA-settings"], (data) => {
-            chrome.storage.local.get(["PA-settings"], (data) => {
-                App.settings.degree = data["PA-settings"].degree;
-                App.settings.faculty = data["PA-settings"].faculty;
-                App.settings.department = data["PA-settings"].department;
+            App._getStorage("PA-settings", (data) => {
+                App.settings.degree = data["PA-settings"]?.degree;
+                App.settings.faculty = data["PA-settings"]?.faculty;
+                App.settings.department = data["PA-settings"]?.department;
                 resolved();
             });
-        });
-
+        })
     },
 };
-
 
 const init = function () {
     // UI.DOM.classInputForm.style.display = "none";
