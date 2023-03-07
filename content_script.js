@@ -1,4 +1,39 @@
 const PA_App = {
+    state: ("Initial"),
+    running: false,
+    wantedClasses: [],
+    loadWantedClassesFromStorage() {
+        PA_Utility._getStorage("PA-classes", (data) => {
+
+            console.info("User data in storage:");
+            console.log(data);
+            if (Object.keys(data).length === 0) return;
+
+            data["PA-classes"].forEach(_class => {
+                const wantedClass = new PA_classFactory(_class[0], _class[1], _class[2], false, null);
+                this.wantedClasses.push(wantedClass);
+            });
+            console.info("User wanted classes: " + PA_App.wantedClasses);
+            PA_DOM.Start();
+        });
+    },
+    loadUserSettings() {
+
+        PA_Utility._getStorage("PA-settings", (data) => {
+            PA_App.degree = data["PA-settings"].degree;
+            PA_App.faculty = data["PA-settings"].faculty;
+            PA_App.major = data["PA-settings"].department;
+            console.log("Loaded user's settings.");
+        });
+    },
+    allAdded: false,
+    degree: "",
+    faculty: "",
+    major: "",
+    openClasses: [],
+    openWantedClasses: [],
+};
+const PA_Utility = {
     _setStorage(key, value) {
         // using local api instead
         let data = {};
@@ -15,11 +50,16 @@ const PA_App = {
             callback(data);
         });
     },
+    modifyState(newState) {
+        PA_App.state = PA_Utility.state[newState];
+        _setStorage("PA-state", newState);
+        return PA_Utility.state[newState];
+    },
     state: {
         Initial: "Initial",
 
         Searching: "Searching",
-        Registeration: "Registeration",
+        Registering: "Registering",
         FreeTime: "FreeTime",
     }
 }
@@ -43,42 +83,15 @@ class PA_classFactory {
         return `${this.name} ${this.ID} ${this.sections.join(', ')}`;
     }
 }
-const PA_Classes = {
-    state: PA_App.state["Initial"],
-    running: false,
-    wantedClasses: [],
-    loadWantedClassesFromStorage() {
-        PA_App._getStorage("PA-classes", (data) => {
+const PA_StateTransition = {
+    registerWantedClass() {
+        PA_Utility.modifyState(PA_Utility.state.Registering)
 
-            console.info("User data in storage:");
-            console.log(data);
-            if (Object.keys(data).length === 0) return;
 
-            data["PA-classes"].forEach(_class => {
-                const wantedClass = new PA_classFactory(_class[0], _class[1], _class[2], false, null);
-                this.wantedClasses.push(wantedClass);
-            });
-            console.info("User wanted classes: " + PA_Classes.wantedClasses);
-            PA_DOM.Start();
-        });
+
     },
-    loadUserSettings() {
 
-        PA_App._getStorage("PA-settings", (data) => {
-            PA_Classes.degree = data["PA-settings"].degree;
-            PA_Classes.faculty = data["PA-settings"].faculty;
-            PA_Classes.major = data["PA-settings"].department;
-            console.log("Loaded user's settings.");
-        });
-    },
-    allAdded: false,
-    degree: "",
-    faculty: "",
-    major: "",
-    openClasses: [],
-    openWantedClasses: [],
 };
-
 
 
 // ********************
@@ -108,7 +121,7 @@ const PA_DOM = {
         // Loads available classes into schedule
         const degree = document.getElementById("form:degree");
         [...degree.children].forEach((option) => {
-            if (option.textContent.includes(PA_Classes.degree)) {
+            if (option.textContent.includes(PA_App.degree)) {
                 option.selected = true;
                 degree.dispatchEvent(new Event("change"));
                 console.log("degree selected");
@@ -117,7 +130,7 @@ const PA_DOM = {
         setTimeout(function () {
             const faculty = document.getElementById("form:Faculty");
             [...faculty.children].forEach((el) => {
-                if (el.textContent === PA_Classes.faculty) {
+                if (el.textContent === PA_App.faculty) {
                     el.selected = true;
                     faculty.dispatchEvent(new Event("change"));
                     console.log("Faculty selected");
@@ -128,7 +141,7 @@ const PA_DOM = {
         setTimeout(function () {
             const major = document.getElementById("form:departmentlist");
             [...major.children].forEach((el) => {
-                if (el.textContent === PA_Classes.major) {
+                if (el.textContent === PA_App.major) {
                     el.selected = true;
                     const event = new Event("change");
                     major.dispatchEvent(event);
@@ -162,30 +175,39 @@ const PA_DOM = {
                     .getNamedItem("data-rk")
                     .value.split(" ")[1];
                 const openClass = new PA_classFactory(name, ID, sections, false, null)
-                PA_Classes.openClasses.push(openClass);
+                PA_App.openClasses.push(openClass);
             }
         });
     },
 
     storeOpenWantedCourses() {
         // Stores the open and wanted classes.
-        // PA_Classes.wantedClasses.forEach((wantedClass) => {
-        //     if (PA_Classes.openClasses.some((openClass) => openClass.ID === wantedClass.ID && wantedClass.sections.includes(openClass.sections[0])))
-        //         PA_Classes.openWantedClasses.push(wantedClass);
+        // PA_App.wantedClasses.forEach((wantedClass) => {
+        //     if (PA_App.openClasses.some((openClass) => openClass.ID === wantedClass.ID && wantedClass.sections.includes(openClass.sections[0])))
+        //         PA_App.openWantedClasses.push(wantedClass);
         // });
-        PA_Classes.openClasses.forEach((openClass) => {
-            if (PA_Classes.wantedClasses.some((wantedClass) => openClass.ID === wantedClass.ID && wantedClass.sections.includes(
+        PA_App.openClasses.forEach((openClass) => {
+            if (PA_App.wantedClasses.some((wantedClass) => openClass.ID === wantedClass.ID && wantedClass.sections.includes(
                 openClass.sections[0]
             )))
-                PA_Classes.openWantedClasses.push(openClass);
+                PA_App.openWantedClasses.push(openClass);
         });
-        console.log("Open wanted classes are\n", PA_Classes.openWantedClasses);
+        console.log("Open wanted classes are\n", PA_App.openWantedClasses);
+    },
+
+
+    checkIfClassWasFound() {
+        if (PA_App.openWantedClasses.length === 0)
+            return false;
+
+        PA_DOM.alertWithOpenWantedCourses();
+        PA_StateTransition.registerWantedClass();
+
     },
 
     alertWithOpenWantedCourses() {
-        if (PA_Classes.openWantedClasses.length === 0) return;
         const output = [];
-        PA_Classes.openWantedClasses.forEach((OWclass) => output.push(OWclass.toString()));
+        PA_App.openWantedClasses.forEach((OWclass) => output.push(OWclass.toString()));
         new Notification(
             `The following classe(s) are open: ${output.join("\n")}`
         );
@@ -195,29 +217,28 @@ const PA_DOM = {
         this.sfx.play().catch(err => {
             console.log('Error playing audio. Make sure to click on the background of the page.');
         });
-
     },
     removedSavedClasses() {
         // Removes classes saved in openClasses and openWantedClasses in every iteration.
-        PA_Classes.openClasses = [];
-        PA_Classes.openWantedClasses = [];
+        PA_App.openClasses = [];
+        PA_App.openWantedClasses = [];
     },
     Start() {
-        console.log(PA_Classes.state);
-        PA_Classes.state = PA_App.state["Searching"];
+        console.log(PA_App.state);
+        PA_Utility.modifyState(PA_Utility.state.Searching);
         setInterval(() => {
-            if (!PA_Classes.running) {
-                PA_Classes.state = PA_App.state["Initial"];
+            if (!PA_App.running) {
+
                 return;
             }
             console.log("Interval Called");
             this.loadClasses();
             setTimeout(() => {
                 this.storeOpenClasses();
-                console.log("Open classes are\n", PA_Classes.openClasses);
-                console.log("Wanted classes are\n", PA_Classes.wantedClasses);
+                console.log("Open classes are\n", PA_App.openClasses);
+                console.log("Wanted classes are\n", PA_App.wantedClasses);
                 this.storeOpenWantedCourses();
-                this.alertWithOpenWantedCourses();
+                this.checkIfClassWasFound();
                 this.removedSavedClasses();
             }, this.delay.delay());
             this.delay.resetDelayCount();
@@ -228,30 +249,30 @@ const PA_DOM = {
 }
 
 const init = function () {
-    PA_App._setStorage("PA-start", false)
+    PA_Utility._setStorage("PA-start", false)
     console.info('Pumpkin Adder: Ready');
-    PA_Classes.loadUserSettings();
+    PA_App.loadUserSettings();
 }
 init();
 
 
 const PA_intervalCheckIfToStart = setInterval(() => {
     // Checks if the user wants to start every second. Acts like a primitive "event listener".
-    PA_App._getStorage("PA-start", (data) => {
+    PA_Utility._getStorage("PA-start", (data) => {
         if (data["PA-start"] === true) {
-            PA_Classes.loadWantedClassesFromStorage();
+            PA_App.loadWantedClassesFromStorage();
             clearInterval(PA_intervalCheckIfToStart);
         }
     })
 }, 1000);
 
 const PA_intervalCheckIfToContinue = setInterval(() => {
-    PA_App._getStorage("PA-start", (data) => {
+    PA_Utility._getStorage("PA-start", (data) => {
         if (data["PA-start"] === true) {
-            PA_Classes.running = true;
+            PA_App.running = true;
         }
         else
-            PA_Classes.running = false;
+            PA_App.running = false;
     })
 }, 1000);
 
