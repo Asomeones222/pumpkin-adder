@@ -1,6 +1,6 @@
 # Pumpkin Adder
 
-A web extension which automates the class registration process for JU students.
+A browser extension which automates the class registration process for JU students.
 
 ## TODO
 
