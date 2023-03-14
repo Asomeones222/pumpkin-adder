@@ -1,5 +1,5 @@
 const PA_App = {
-    state: ("Initial"),
+    state: "Initial",
     running: false,
     wantedClasses: [],
     loadWantedClassesFromStorage() {
@@ -14,7 +14,6 @@ const PA_App = {
                 this.wantedClasses.push(wantedClass);
             });
             console.info("User wanted classes: " + PA_App.wantedClasses);
-            PA_DOM.Start();
         });
     },
     loadUserSettings() {
@@ -51,13 +50,15 @@ const PA_Utility = {
         });
     },
     modifyState(newState) {
+
+        console.log(`Modify State: Previous state: ${PA_App.state}`);
         PA_App.state = PA_Utility.state[newState];
-        _setStorage("PA-state", newState);
+        console.log(`Modify State: New state: ${PA_App.state}`);
+        PA_Utility._setStorage("PA-state", newState);
         return PA_Utility.state[newState];
     },
     state: {
         Initial: "Initial",
-
         Searching: "Searching",
         Registering: "Registering",
         FreeTime: "FreeTime",
@@ -86,8 +87,8 @@ class PA_classFactory {
 const PA_StateTransition = {
     registerWantedClass() {
         PA_Utility.modifyState(PA_Utility.state.Registering)
-
-
+        PA_Utility._setStorage("PA-classToRegister", PA_App.openWantedClasses[0]);
+        window.location.assign("https://regapp.ju.edu.jo/selfregapp/secured/registration.xhtml");
 
     },
 
@@ -200,7 +201,7 @@ const PA_DOM = {
         if (PA_App.openWantedClasses.length === 0)
             return false;
 
-        PA_DOM.alertWithOpenWantedCourses();
+        // PA_DOM.alertWithOpenWantedCourses();
         PA_StateTransition.registerWantedClass();
 
     },
@@ -228,7 +229,7 @@ const PA_DOM = {
         PA_Utility.modifyState(PA_Utility.state.Searching);
         setInterval(() => {
             if (!PA_App.running) {
-
+                PA_Utility.modifyState(PA_Utility.state.Initial);
                 return;
             }
             console.log("Interval Called");
@@ -262,6 +263,7 @@ const PA_intervalCheckIfToStart = setInterval(() => {
         if (data["PA-start"] === true) {
             PA_App.loadWantedClassesFromStorage();
             clearInterval(PA_intervalCheckIfToStart);
+            PA_DOM.Start();
         }
     })
 }, 1000);
