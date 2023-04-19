@@ -4,20 +4,24 @@ const PA_App = {
     wantedClasses: [],
     loadWantedClassesFromStorage() {
         PA_Utility._getStorage("PA-classes", (data) => {
-
             console.info("User data in storage:");
             console.log(data);
             if (Object.keys(data).length === 0) return;
 
-            data["PA-classes"].forEach(_class => {
-                const wantedClass = new PA_classFactory(_class[0], _class[1], _class[2], false, null);
+            data["PA-classes"].forEach((_class) => {
+                const wantedClass = new PA_classFactory(
+                    _class[0],
+                    _class[1],
+                    _class[2],
+                    false,
+                    null
+                );
                 this.wantedClasses.push(wantedClass);
             });
             console.info("User wanted classes: " + PA_App.wantedClasses);
         });
     },
     loadUserSettings() {
-
         PA_Utility._getStorage("PA-settings", (data) => {
             PA_App.degree = data["PA-settings"].degree;
             PA_App.faculty = data["PA-settings"].faculty;
@@ -38,19 +42,18 @@ const PA_Utility = {
         let data = {};
         data[key] = value;
 
-        chrome.storage.local.set(data)
+        chrome.storage.local.set(data);
     },
-    _getStorage(key, callback = () => { }) {
+    _getStorage(key, callback = () => {}) {
         // using local api instead
         chrome.storage.local.get(key, (data) => {
             if (chrome.runtime.lastError)
-                console.log('Error getting from storage!');
+                console.log("Error getting from storage!");
             // console.log(`${key}: Data retrieved from storage`);
             callback(data);
         });
     },
     modifyState(newState) {
-
         console.log(`Modify State: Previous state: ${PA_App.state}`);
         PA_App.state = PA_Utility.state[newState];
         console.log(`Modify State: New state: ${PA_App.state}`);
@@ -62,8 +65,8 @@ const PA_Utility = {
         Searching: "Searching",
         Registering: "Registering",
         FreeTime: "FreeTime",
-    }
-}
+    },
+};
 
 class PA_classFactory {
     /**
@@ -76,24 +79,26 @@ class PA_classFactory {
     constructor(name, ID, sections, isRegistered, category) {
         this.name = name.trim();
         this.ID = ID.trim();
-        this.sections = sections.trim().split(',');
+        this.sections = sections.trim().split(",");
         this.isRegistered = isRegistered;
         this.category = category;
     }
     toString() {
-        return `${this.name} ${this.ID} ${this.sections.join(', ')}`;
+        return `${this.name} ${this.ID} ${this.sections.join(", ")}`;
     }
 }
 const PA_StateTransition = {
     registerWantedClass() {
-        PA_Utility.modifyState(PA_Utility.state.Registering)
-        PA_Utility._setStorage("PA-classToRegister", PA_App.openWantedClasses[0]);
-        window.location.assign("https://regapp.ju.edu.jo/selfregapp/secured/registration.xhtml");
-
+        PA_Utility.modifyState(PA_Utility.state.Registering);
+        PA_Utility._setStorage(
+            "PA-classToRegister",
+            PA_App.openWantedClasses[0]
+        );
+        window.location.assign(
+            "https://regapp.ju.edu.jo/selfregapp/secured/registration.xhtml"
+        );
     },
-
 };
-
 
 // ********************
 
@@ -164,7 +169,9 @@ const PA_DOM = {
             console.log("Sort by classes.");
         }, 1000); //Delay between each two presses.
 
-        const classesTableElement = document.getElementById("form:ofrddatatable_data");
+        const classesTableElement = document.getElementById(
+            "form:ofrddatatable_data"
+        );
         [...classesTableElement.children].forEach((item) => {
             if ([...item.children].at(-3).textContent.includes("مفتوحة")) {
                 //Check the cell where the status of the class is shown.
@@ -175,7 +182,13 @@ const PA_DOM = {
                 const sections = item.attributes
                     .getNamedItem("data-rk")
                     .value.split(" ")[1];
-                const openClass = new PA_classFactory(name, ID, sections, false, null)
+                const openClass = new PA_classFactory(
+                    name,
+                    ID,
+                    sections,
+                    false,
+                    null
+                );
                 PA_App.openClasses.push(openClass);
             }
         });
@@ -188,35 +201,40 @@ const PA_DOM = {
         //         PA_App.openWantedClasses.push(wantedClass);
         // });
         PA_App.openClasses.forEach((openClass) => {
-            if (PA_App.wantedClasses.some((wantedClass) => openClass.ID === wantedClass.ID && wantedClass.sections.includes(
-                openClass.sections[0]
-            )))
+            if (
+                PA_App.wantedClasses.some(
+                    (wantedClass) =>
+                        openClass.ID === wantedClass.ID &&
+                        wantedClass.sections.includes(openClass.sections[0])
+                )
+            )
                 PA_App.openWantedClasses.push(openClass);
         });
         console.log("Open wanted classes are\n", PA_App.openWantedClasses);
     },
 
-
     checkIfClassWasFound() {
-        if (PA_App.openWantedClasses.length === 0)
-            return false;
+        if (PA_App.openWantedClasses.length === 0) return false;
 
         // PA_DOM.alertWithOpenWantedCourses();
         PA_StateTransition.registerWantedClass();
-
     },
 
     alertWithOpenWantedCourses() {
         const output = [];
-        PA_App.openWantedClasses.forEach((OWclass) => output.push(OWclass.toString()));
+        if (!PA_App.openWantedClasses.length) return;
+        PA_App.openWantedClasses.forEach((OWclass) =>
+            output.push(OWclass.toString())
+        );
         new Notification(
             `The following classe(s) are open: ${output.join("\n")}`
         );
         console.info("%cNotification triggered!", "color:cyan");
-        if (this.sfx.currentTime < 1)
-            this.sfx.currentTime = 0;
-        this.sfx.play().catch(err => {
-            console.log('Error playing audio. Make sure to click on the background of the page.');
+        if (this.sfx.currentTime < 1) this.sfx.currentTime = 0;
+        this.sfx.play().catch((err) => {
+            console.log(
+                "Error playing audio. Make sure to click on the background of the page."
+            );
         });
     },
     removedSavedClasses() {
@@ -239,23 +257,20 @@ const PA_DOM = {
                 console.log("Open classes are\n", PA_App.openClasses);
                 console.log("Wanted classes are\n", PA_App.wantedClasses);
                 this.storeOpenWantedCourses();
-                this.checkIfClassWasFound();
+                this.alertWithOpenWantedCourses();
                 this.removedSavedClasses();
             }, this.delay.delay());
             this.delay.resetDelayCount();
-
         }, 8 * this.delay.sleep); //8 is the number of all delay.delay() called plus 1!
     },
-
-}
+};
 
 const init = function () {
-    PA_Utility._setStorage("PA-start", false)
-    console.info('Pumpkin Adder: Ready');
+    PA_Utility._setStorage("PA-start", false);
+    console.info("Pumpkin Adder: Ready");
     PA_App.loadUserSettings();
-}
+};
 init();
-
 
 const PA_intervalCheckIfToStart = setInterval(() => {
     // Checks if the user wants to start every second. Acts like a primitive "event listener".
@@ -265,16 +280,13 @@ const PA_intervalCheckIfToStart = setInterval(() => {
             clearInterval(PA_intervalCheckIfToStart);
             PA_DOM.Start();
         }
-    })
+    });
 }, 1000);
 
 const PA_intervalCheckIfToContinue = setInterval(() => {
     PA_Utility._getStorage("PA-start", (data) => {
         if (data["PA-start"] === true) {
             PA_App.running = true;
-        }
-        else
-            PA_App.running = false;
-    })
+        } else PA_App.running = false;
+    });
 }, 1000);
-
