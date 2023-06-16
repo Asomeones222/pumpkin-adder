@@ -3,13 +3,13 @@ const PA_App = {
     running: false,
     wantedClasses: [],
     loadWantedClassesFromStorage() {
-        PA_Utility._getStorage("PA-classes", (data) => {
+        PA_Utility.getStorage("PA-classes", (data) => {
             console.info("User data in storage:");
             console.log(data);
             if (Object.keys(data).length === 0) return;
 
             data["PA-classes"].forEach((_class) => {
-                const wantedClass = new PA_classFactory(
+                const wantedClass = new PA_class(
                     _class[0],
                     _class[1],
                     _class[2],
@@ -22,7 +22,7 @@ const PA_App = {
         });
     },
     loadUserSettings() {
-        PA_Utility._getStorage("PA-settings", (data) => {
+        PA_Utility.getStorage("PA-settings", (data) => {
             PA_App.degree = data["PA-settings"].degree;
             PA_App.faculty = data["PA-settings"].faculty;
             PA_App.major = data["PA-settings"].department;
@@ -37,14 +37,14 @@ const PA_App = {
     openWantedClasses: [],
 };
 const PA_Utility = {
-    _setStorage(key, value) {
+    setStorage(key, value) {
         // using local api instead
         let data = {};
         data[key] = value;
 
         chrome.storage.local.set(data);
     },
-    _getStorage(key, callback = () => {}) {
+    getStorage(key, callback = () => {}) {
         // using local api instead
         chrome.storage.local.get(key, (data) => {
             if (chrome.runtime.lastError)
@@ -57,7 +57,7 @@ const PA_Utility = {
         console.log(`Modify State: Previous state: ${PA_App.state}`);
         PA_App.state = PA_Utility.state[newState];
         console.log(`Modify State: New state: ${PA_App.state}`);
-        PA_Utility._setStorage("PA-state", newState);
+        PA_Utility.setStorage("PA-state", newState);
         return PA_Utility.state[newState];
     },
     state: {
@@ -68,9 +68,9 @@ const PA_Utility = {
     },
 };
 
-class PA_classFactory {
+class PA_class {
     /**
-     * @param {string | null} name
+     * @param {string} name
      * @param {string} ID
      * @param {string} sections
      * @param {boolean} isRegistered
@@ -90,7 +90,7 @@ class PA_classFactory {
 const PA_StateTransition = {
     registerWantedClass() {
         PA_Utility.modifyState(PA_Utility.state.Registering);
-        PA_Utility._setStorage(
+        PA_Utility.setStorage(
             "PA-classToRegister",
             PA_App.openWantedClasses[0]
         );
@@ -182,13 +182,7 @@ const PA_DOM = {
                 const sections = item.attributes
                     .getNamedItem("data-rk")
                     .value.split(" ")[1];
-                const openClass = new PA_classFactory(
-                    name,
-                    ID,
-                    sections,
-                    false,
-                    null
-                );
+                const openClass = new PA_class(name, ID, sections, false, null);
                 PA_App.openClasses.push(openClass);
             }
         });
@@ -266,15 +260,15 @@ const PA_DOM = {
 };
 
 const init = function () {
-    PA_Utility._setStorage("PA-start", false);
+    PA_Utility.setStorage("PA-start", false);
     console.info("Pumpkin Adder: Ready");
     PA_App.loadUserSettings();
 };
 init();
 
 const PA_intervalCheckIfToStart = setInterval(() => {
-    // Checks if the user wants to start every second. Acts like a primitive "event listener".
-    PA_Utility._getStorage("PA-start", (data) => {
+    // Polling to check if the user wants to start every second.
+    PA_Utility.getStorage("PA-start", (data) => {
         if (data["PA-start"] === true) {
             PA_App.loadWantedClassesFromStorage();
             clearInterval(PA_intervalCheckIfToStart);
@@ -284,7 +278,7 @@ const PA_intervalCheckIfToStart = setInterval(() => {
 }, 1000);
 
 const PA_intervalCheckIfToContinue = setInterval(() => {
-    PA_Utility._getStorage("PA-start", (data) => {
+    PA_Utility.getStorage("PA-start", (data) => {
         if (data["PA-start"] === true) {
             PA_App.running = true;
         } else PA_App.running = false;

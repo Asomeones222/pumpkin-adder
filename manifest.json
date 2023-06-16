@@ -1,14 +1,14 @@
 {
     "manifest_version": 2,
     "name": "Pumpkin Adder",
-    "version": "0.0.5",
+    "version": "0.5.0",
     "description": "Auto class registration tool for JU. By your pumpkin (*^ ‿^*)♡",
     "icons": {
         "48": "./src/icons/border-48.png"
     },
     "content_scripts": [
         {
-            "matches": ["*://regapp.ju.edu.jo/*"],
+            "matches": ["*://regapp.ju.edu.jo/selfregapp/secured/ofrd-course.xhtml*"],
             "js": ["./content_script.js"]
         }
     ],
